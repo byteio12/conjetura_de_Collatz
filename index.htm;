@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- 🔹 Hace que el sitio sea responsive -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧮 La Conjetura de Collatz</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      background: linear-gradient(to bottom, #151A28, #0E111B);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-top: 10px;
+      font-size: clamp(1.2rem, 2.5vw, 1.8rem); /* 🔹 Escalable */
+      text-align: center;
+      max-width: 900px;
+    }
+    .info {
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: clamp(0.9rem, 1.5vw, 1rem); /* 🔹 Texto flexible */
+      line-height: 1.6;
+    }
+    .input-box {
+      margin: 15px 0;
+      text-align: center;
+    }
+    input {
+      padding: 8px;
+      font-size: clamp(0.9rem, 1.5vw, 1rem); /* 🔹 Escalable */
+      text-align: center;
+      border: none;
+      border-radius: 6px;
+      outline: none;
+      width: clamp(140px, 25vw, 200px); /* 🔹 Se adapta */
+    }
+    button {
+      padding: 8px 14px;
+      margin-left: 10px;
+      font-size: clamp(0.9rem, 1.5vw, 1rem);
+      font-weight: bold;
+      color: white;
+      background: black;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #333;
+    }
+    .resultado {
+      max-width: 800px;
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: clamp(0.8rem, 1.3vw, 0.95rem);
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 "La Conjetura de Collatz: el problema matemático más difícil de resolver"</h1>
+
+  <div class="info">
+    <p><b>Explorando la Conjetura de Collatz: el misterio matemático del 3n + 1</b></p>
+    <p>La <b>conjetura de Collatz</b>, también conocida como el <i>problema 3n + 1</i>, es un enigma matemático que desafía a los matemáticos desde 1937. La regla es sencilla:</p>
+    <ul>
+      <li>Si un número entero positivo es par, se divide entre 2.</li>
+      <li>Si es impar, se multiplica por 3 y se suma 1.</li>
+    </ul>
+    <p>El proceso se repite hasta alcanzar el número 1. Sorprendentemente, <b>todos los números probados hasta la fecha terminan en 1</b>, incluyendo cifras gigantescas como 2<sup>68</sup> (más de 295 quintillones).</p>
+    <p>A pesar de su aparente simplicidad, demostrar que esto ocurre para <b>todos los enteros positivos</b> es extremadamente difícil. Algunos números pueden aumentar a cifras astronómicas antes de descender, haciendo imposible un análisis exhaustivo por fuerza bruta.</p>
+    <p><b>Datos curiosos:</b></p>
+    <ul>
+      <li>La secuencia de Collatz ha sido verificada para más de 10<sup>20</sup> números.</li>
+      <li>Algunos números, como 27, producen secuencias sorprendentemente largas con oscilaciones inesperadas.</li>
+      <li>Aunque nunca se ha demostrado formalmente, su simplicidad y la constancia de los resultados la convierten en un clásico misterio matemático.</li>
+    </ul>
+    <p>En resumen, la conjetura de Collatz es <b>fácil de entender, pero casi imposible de probar</b>, fascinando a matemáticos y curiosos de todo el mundo.</p>
+  </div>
+
+  <div class="input-box">
+    <label for="numero">Ingresa un número: </label>
+    <input type="text" id="numero" placeholder="Ej: 27, 2^68, 2⁶⁸">
+    <button onclick="generarSecuencia()">Generar Secuencia</button>
+  </div>
+
+  <div class="resultado" id="resultado"></div>
+
+  <script>
+    const MAX_LIMIT = 2n ** 68n; // límite máximo (BigInt)
+
+    const superindiceMapa = {
+      "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4",
+      "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9"
+    };
+
+    function parseEntrada(valor) {
+      valor = valor.trim();
+
+      if (valor.includes("^")) {
+        const [base, exp] = valor.split("^").map(x => x.trim());
+        return BigInt(base) ** BigInt(exp);
+      }
+
+      let base = "";
+      let exp = "";
+      for (let char of valor) {
+        if (char in superindiceMapa) {
+          exp += superindiceMapa[char];
+        } else {
+          base += char;
+        }
+      }
+      if (exp) {
+        return BigInt(base) ** BigInt(exp);
+      }
+
+      return BigInt(valor);
+    }
+
+    function collatzSequence(n) {
+      let sequence = [n];
+      while (n !== 1n) {
+        n = (n % 2n === 0n) ? n / 2n : n * 3n + 1n;
+        sequence.push(n);
+      }
+      return sequence;
+    }
+
+    function generarSecuencia() {
+      const entrada = document.getElementById("numero").value;
+      const salida = document.getElementById("resultado");
+
+      let num;
+      try {
+        num = parseEntrada(entrada);
+      } catch {
+        salida.textContent = "⚠️ Ingresa un número válido (ej: 27, 2^68, 2⁶⁸).";
+        return;
+      }
+
+      if (num <= 0n) {
+        salida.textContent = "⚠️ Ingresa un número entero positivo.";
+        return;
+      }
+
+      if (num > MAX_LIMIT) {
+        salida.textContent = "⚠️ El número no puede ser mayor a 2^68.";
+        return;
+      }
+
+      const secuencia = collatzSequence(num);
+      const pasos = secuencia.length - 1;
+      const maximo = secuencia.reduce((a, b) => a > b ? a : b, 0n);
+
+      let texto = `🔢 Número inicial: ${num}\n📈 Pasos: ${pasos}\n📊 Máximo alcanzado: ${maximo}\n\n`;
+      texto += secuencia.join(" → ");
+
+      const ultimaParte = secuencia.slice(-3).map(n => n.toString());
+if (ultimaParte.join(" → ") === "4 → 2 → 1") {
+  texto += "\n\n✅ Aquí se acaba: 4 → 2 → 1";
+  texto += "\nℹ️ ¿Por qué?: La secuencia siempre termina en el ciclo 4 → 2 → 1, que se repite indefinidamente.";
+  texto += "\nEsto ocurre porque al llegar a 1, la regla dice que como es impar: 1 × 3 + 1 = 4.";
+  texto += "\nLuego, 4 ÷ 2 = 2 y después 2 ÷ 2 = 1.";
+  texto += "\nAsí se reinicia el mismo ciclo una y otra vez sin generar números nuevos.";
+}
+
+
+
+      salida.textContent = texto;
+    }
+  </script>
+</body>
+</html>
